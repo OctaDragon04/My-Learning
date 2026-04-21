@@ -15,13 +15,13 @@ export default function FacultyDashboard() {
   }, [])
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    await addCourse(form)
-    setForm({ title: '', description: '' })
-    setSuccess('Course added successfully!')
-    load()
-    setTimeout(() => setSuccess(''), 3000)
-  }
+  e.preventDefault()
+  await addCourse({ ...form, instructorId: 'temp-faculty-1', instructorName: 'Faculty' })
+  setForm({ title: '', description: '' })
+  setSuccess('Course added successfully!')
+  load()
+  setTimeout(() => setSuccess(''), 3000)
+}
 
   const handleDelete = async (id) => {
     await deleteCourse(id)
