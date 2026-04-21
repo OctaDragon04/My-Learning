@@ -7,7 +7,7 @@ const Course = require('./models/course');
 const User = require('./models/user');
 
 const mongoUrl = process.env.MONGO_URI;
-const app = express();
+const app = express();    
 const PORT =process.env.PORT || 5000;
 
 app.use(cors());
