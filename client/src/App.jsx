@@ -5,6 +5,7 @@ import StudentGallery from './pages/StudentGallery'
 import FacultyDashboard from './pages/FacultyDashboard'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import QuizPage from './pages/QuizPage'
 
 function ProtectedRoute({ children, role }) {
   const { user, loading } = useAuth()
@@ -22,6 +23,11 @@ function AppRoutes() {
         <Route path='/' element={<StudentGallery />} />
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
+        <Route path='/quiz/:courseId' element={
+          <ProtectedRoute role='student'>
+            <QuizPage />
+          </ProtectedRoute>
+        } />
         <Route path='/dashboard' element={
           <ProtectedRoute role='faculty'>
             <FacultyDashboard />

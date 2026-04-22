@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react'
 import { Container, Row, Col, Card, Button, Spinner, Alert, Badge } from 'react-bootstrap'
 import { getCourses, enrollCourse, getEnrolledCourses } from '../api/courses'
 import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 export default function StudentGallery() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [courses, setCourses] = useState([])
   const [enrolled, setEnrolled] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
-  const [activeTab, setActiveTab] = useState('all') // 'all' or 'my'
+  const [activeTab, setActiveTab] = useState('all')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,20 +95,36 @@ export default function StudentGallery() {
                 <Card.Text style={{ fontSize: '13px', color: '#666', flexGrow: 1 }}>
                   {course.description}
                 </Card.Text>
+
                 {user && user.role === 'student' && (
+                  <div className='d-flex gap-2 mt-2'>
+                    <Button
+                      variant={isEnrolled(course._id) ? 'success' : 'primary'}
+                      size='sm'
+                      onClick={() => handleEnroll(course._id)}
+                      disabled={isEnrolled(course._id)}
+                    >
+                      {isEnrolled(course._id) ? '✅ Enrolled' : 'Enroll Now'}
+                    </Button>
+                    {isEnrolled(course._id) && (
+                      <Button
+                        variant='outline-dark'
+                        size='sm'
+                        onClick={() => navigate(`/quiz/${course._id}`)}
+                      >
+                        📝 Take Quiz
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {!user && (
                   <Button
-                    variant={isEnrolled(course._id) ? 'success' : 'primary'}
+                    variant='outline-primary'
                     size='sm'
                     className='mt-2'
-                    onClick={() => handleEnroll(course._id)}
-                    disabled={isEnrolled(course._id)}
+                    onClick={() => navigate('/login')}
                   >
-                    {isEnrolled(course._id) ? '✅ Enrolled' : 'Enroll Now'}
-                  </Button>
-                )}
-                {!user && (
-                  <Button variant='outline-primary' size='sm' className='mt-2'
-                    onClick={() => window.location.href = '/login'}>
                     Login to Enroll
                   </Button>
                 )}
@@ -118,7 +136,9 @@ export default function StudentGallery() {
 
       {displayCourses.length === 0 && (
         <p style={{ color: '#888' }}>
-          {activeTab === 'my' ? 'You have not enrolled in any courses yet.' : 'No courses available yet.'}
+          {activeTab === 'my'
+            ? 'You have not enrolled in any courses yet.'
+            : 'No courses available yet.'}
         </p>
       )}
     </Container>

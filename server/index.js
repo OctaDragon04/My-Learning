@@ -98,6 +98,67 @@ app.get('/api/enroll/:userId', async (req, res) => {
   }
 })
 
+const Quiz = require('./models/quiz')
+
+// Add quiz to a course
+app.post('/api/quiz', async (req, res) => {
+  try {
+    const quiz = await Quiz.create(req.body)
+    res.status(201).json(quiz)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Get quizzes for a course
+app.get('/api/quiz/:courseId', async (req, res) => {
+  try {
+    const quizzes = await Quiz.find({ courseId: req.params.courseId })
+    res.json(quizzes)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Save quiz result
+app.post('/api/quiz/result', async (req, res) => {
+  try {
+    const { userId, courseId, score, total } = req.body
+    const user = await User.findById(userId)
+    if (!user) return res.status(404).json({ error: 'User not found' })
+    res.json({ message: 'Result saved', score, total })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+const Groq = require('groq-sdk')
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message } = req.body
+    const completion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a helpful learning assistant for an e-learning platform called My Learning. Answer questions related to courses and education only. Keep answers concise.'
+        },
+        {
+          role: 'user',
+          content: message
+        }
+      ],
+      model: 'llama3-8b-8192',
+    })
+    const reply = completion.choices[0]?.message?.content || 'Sorry, I could not answer that.'
+    res.json({ reply })
+  } catch (err) {
+    console.log('GROQ ERROR:', err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`)
 })
