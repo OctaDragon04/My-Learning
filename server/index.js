@@ -2,21 +2,38 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
+const jwt = require('jsonwebtoken')  // ← add this import
 
 const Course = require('./models/course')
+const Quiz = require('./models/quiz')
 const User = require('./models/user')
 const authRoutes = require('./routes/auth')
+const Groq = require('groq-sdk')
 
 const mongoUrl = process.env.MONGO_URI
 const app = express()
 const PORT = process.env.PORT || 5000
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 app.use(cors())
 app.use(express.json())
 
 mongoose.connect(mongoUrl)
-  .then(() => { console.log('Connected to MongoDB') })
-  .catch((err) => { console.error('Error connecting to MongoDB:', err) })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('Error connecting to MongoDB:', err))
+
+// ── verifyToken defined FIRST before any route uses it ──
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1]
+  if (!token) return res.status(401).json({ error: 'No token provided' })
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    req.user = decoded
+    next()
+  } catch {
+    res.status(401).json({ error: 'Invalid token' })
+  }
+}
 
 app.get('/', (req, res) => {
   res.send('My Learning LMS Server is Running!')
@@ -26,7 +43,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes)
 
 // Course routes
-app.post('/api/courses', async (req, res) => {
+app.post('/api/courses', verifyToken, async (req, res) => {
   try {
     const newCourse = new Course(req.body)
     const savedCourse = await newCourse.save()
@@ -45,16 +62,7 @@ app.get('/api/courses', async (req, res) => {
   }
 })
 
-app.delete('/api/courses/:id', async (req, res) => {
-  try {
-    await Course.findByIdAndDelete(req.params.id)
-    res.status(200).json({ message: 'Course deleted' })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
-
-app.put('/api/courses/:id', async (req, res) => {
+app.put('/api/courses/:id', verifyToken, async (req, res) => {
   try {
     const updated = await Course.findByIdAndUpdate(
       req.params.id,
@@ -67,18 +75,24 @@ app.put('/api/courses/:id', async (req, res) => {
   }
 })
 
-// Enroll in a course
+app.delete('/api/courses/:id', verifyToken, async (req, res) => {
+  try {
+    await Course.findByIdAndDelete(req.params.id)
+    res.status(200).json({ message: 'Course deleted' })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Enroll routes
 app.post('/api/enroll', async (req, res) => {
   try {
     const { userId, courseId } = req.body
     const user = await User.findById(userId)
     if (!user) return res.status(404).json({ error: 'User not found' })
-
-    // Check if already enrolled
     if (user.enrolledCourses.includes(courseId)) {
       return res.status(400).json({ error: 'Already enrolled' })
     }
-
     user.enrolledCourses.push(courseId)
     await user.save()
     res.json({ message: 'Enrolled successfully', enrolledCourses: user.enrolledCourses })
@@ -87,7 +101,6 @@ app.post('/api/enroll', async (req, res) => {
   }
 })
 
-// Get enrolled courses of a user
 app.get('/api/enroll/:userId', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).populate('enrolledCourses')
@@ -98,9 +111,7 @@ app.get('/api/enroll/:userId', async (req, res) => {
   }
 })
 
-const Quiz = require('./models/quiz')
-
-// Add quiz to a course
+// Quiz routes
 app.post('/api/quiz', async (req, res) => {
   try {
     const quiz = await Quiz.create(req.body)
@@ -110,7 +121,6 @@ app.post('/api/quiz', async (req, res) => {
   }
 })
 
-// Get quizzes for a course
 app.get('/api/quiz/:courseId', async (req, res) => {
   try {
     const quizzes = await Quiz.find({ courseId: req.params.courseId })
@@ -120,7 +130,6 @@ app.get('/api/quiz/:courseId', async (req, res) => {
   }
 })
 
-// Save quiz result
 app.post('/api/quiz/result', async (req, res) => {
   try {
     const { userId, courseId, score, total } = req.body
@@ -132,9 +141,7 @@ app.post('/api/quiz/result', async (req, res) => {
   }
 })
 
-const Groq = require('groq-sdk')
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
-
+// Groq AI chat route
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body

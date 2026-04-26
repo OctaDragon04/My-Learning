@@ -4,8 +4,8 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const User = require('../models/user')
 
-const FACULTY_SECRET = 'FACULTY2024'
-const JWT_SECRET = process.env.JWT_SECRET || 'myjwtsecret'
+const FACULTY_SECRET = process.env.FACULTY_SECRET
+const JWT_SECRET = process.env.JWT_SECRET
 
 // Register
 router.post('/register', async (req, res) => {
