@@ -39,7 +39,15 @@ router.post('/register', async (req, res) => {
       { expiresIn: '7d' }
     )
 
-    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } })
+    res.status(201).json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role 
+      } 
+    })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -65,7 +73,15 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' }
     )
 
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } })
+    res.json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role 
+      } 
+    })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -79,7 +95,7 @@ router.get('/me', async (req, res) => {
 
     const decoded = jwt.verify(token, JWT_SECRET)
     const user = await User.findById(decoded.id).select('-password')
-    res.json(user)
+    res.json({ ...user.toObject(), id: user._id })
   } catch (err) {
     res.status(401).json({ error: 'Invalid token' })
   }

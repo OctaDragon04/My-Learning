@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
       axios.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
-        .then(res => setUser(res.data))
+        .then(res => setUser({ ...res.data, id: res.data._id }))
         .catch(() => localStorage.removeItem('token'))
         .finally(() => setLoading(false))
     } else {

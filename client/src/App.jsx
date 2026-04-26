@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Navbar from './components/Navbar'
+import Chatbot from './components/Chatbot'
 import StudentGallery from './pages/StudentGallery'
 import FacultyDashboard from './pages/FacultyDashboard'
 import Login from './pages/Login'
@@ -34,6 +35,7 @@ function AppRoutes() {
           </ProtectedRoute>
         } />
       </Routes>
+      <Chatbot />
     </>
   )
 }
