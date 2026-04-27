@@ -4,8 +4,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { registerUser } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
 
-const FACULTY_SECRET = 'FACULTY2024'
-
 export default function Register() {
   const [step, setStep] = useState(1) // step 1: role selection, step 2: form
   const [role, setRole] = useState('')

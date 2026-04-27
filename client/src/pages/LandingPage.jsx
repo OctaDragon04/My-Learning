@@ -119,7 +119,7 @@ export default function LandingPage() {
       {/* Footer */}
       <div style={{ background: '#212529', color: '#aaa', padding: '20px 0', textAlign: 'center' }}>
         <p className="mb-0" style={{ fontSize: 13 }}>
-          © 2024 My Learning — GLA University, Mathura | Built with MERN Stack
+          © 2026 My Learning — GLA University, Mathura | Built with MERN Stack
         </p>
       </div>
     </div>
