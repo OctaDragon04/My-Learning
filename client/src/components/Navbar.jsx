@@ -11,26 +11,28 @@ export default function Navbar() {
   }
 
   return (
-    <nav className='navbar navbar-dark bg-dark px-4'>
-      <Link className='navbar-brand' to='/'>My Learning</Link>
-      <div className='d-flex align-items-center gap-3'>
-        <Link className='text-white text-decoration-none' to='/'>Gallery</Link>
-        {user ? (
+    <nav className="navbar navbar-dark bg-dark px-4">
+      <Link className="navbar-brand" to={user?.role === 'faculty' ? '/dashboard' : '/gallery'}>
+        My Learning
+      </Link>
+      <div className="d-flex align-items-center gap-3">
+        {user?.role === 'student' && (
           <>
-            {user.role === 'faculty' && (
-              <Link className='text-white text-decoration-none' to='/dashboard'>Dashboard</Link>
-            )}
-            <span className='text-white'>Hi, {user.name.split(' ')[0]}!</span>
-            <button className='btn btn-outline-light btn-sm' onClick={handleLogout}>
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <Link className='text-white text-decoration-none' to='/login'>Login</Link>
-            <Link className='btn btn-outline-light btn-sm' to='/register'>Sign up</Link>
+            <Link className="text-white text-decoration-none" to="/gallery">Gallery</Link>
+            <Link className="text-white text-decoration-none" to="/progress">Progress</Link>
+            <Link className="text-white text-decoration-none" to="/profile">Profile</Link>
           </>
         )}
+        {user?.role === 'faculty' && (
+          <>
+            <Link className="text-white text-decoration-none" to="/dashboard">Dashboard</Link>
+            <Link className="text-white text-decoration-none" to="/faculty-profile">Profile</Link>
+          </>
+        )}
+        <span className="text-white">Hi, {user?.name?.split(' ')[0]}!</span>
+        <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
+          Logout
+        </button>
       </div>
     </nav>
   )

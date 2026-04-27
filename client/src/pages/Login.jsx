@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Container, Card, Form, Button, Alert } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import { loginUser } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
@@ -16,7 +16,7 @@ export default function Login() {
     setError('')
     setLoading(true)
     try {
-      const res = await axios.post('/api/auth/login', form)
+      const res = await loginUser(form)
       login(res.data.token, res.data.user)
       navigate(res.data.user.role === 'faculty' ? '/dashboard' : '/')
     } catch (err) {

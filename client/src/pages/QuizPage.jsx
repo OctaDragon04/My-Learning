@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container, Card, Button, Alert, ProgressBar } from 'react-bootstrap'
-import { getQuizzes } from '../api/courses'
+import { getQuizzes, saveProgress } from '../api/courses'
 import { useAuth } from '../context/AuthContext'
 
 export default function QuizPage() {
@@ -27,12 +27,23 @@ export default function QuizPage() {
     setSelected(index)
     setAnswered(true)
     if (index === quizzes[current].correctAnswer) {
-      setScore(score + 1)
+      setScore(prev => prev + 1)
     }
   }
 
-  const handleNext = () => {
-    if (current + 1 >= quizzes.length) {
+  const handleNext = async () => {
+    const isLastQuestion = current + 1 >= quizzes.length
+
+    if (isLastQuestion) {
+      try {
+        await saveProgress({
+          courseId,
+          quizScore: score,
+          quizTotal: quizzes.length
+        })
+      } catch (err) {
+        console.error('Failed to save progress:', err)
+      }
       setFinished(true)
     } else {
       setCurrent(current + 1)
